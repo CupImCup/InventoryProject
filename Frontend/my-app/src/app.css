@@ -1,0 +1,10 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/forms';
+@plugin '@tailwindcss/typography';
+
+main {
+  background: #333;
+  color: white;
+  padding: 1rem;
+  min-height: 100vh;
+}
