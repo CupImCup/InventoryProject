@@ -28,7 +28,7 @@ def takeName(elem):
 
 load_dotenv()  # loads from .env file
 
-users = os.getenv("USERS").split(",")
+users = os.getenv("USERS")
 steam_login_secure = os.getenv("STEAM_LOGIN_SECURE")
 session_id = os.getenv("SESSION_ID")
 steamLoginSecure = os.getenv("STEAM_LOGIN_SECURE")
