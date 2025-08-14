@@ -1,6 +1,5 @@
 # libraries & dataset
 from datetime import date
-import seaborn as sns
 from pathlib import Path
 import csv
 import time
@@ -20,7 +19,10 @@ explode = []
 PATH = str(Path(__file__).parent)
 today = date.today()
 d1 = today.strftime("%d%m%Y")
-dataStrPath = PATH + '\InventoryTables\inventory'+d1+'.csv'
+#test
+d1 = "05082025"
+
+dataStrPath = PATH + '\InventoryTables\inventory\'+d1+'.csv'
 with open(dataStrPath, 'r', newline ='\n') as csvfile:
     spamreader = csv.reader(csvfile, delimiter=' ')
     next(spamreader)

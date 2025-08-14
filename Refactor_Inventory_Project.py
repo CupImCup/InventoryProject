@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import date
+import datetime
 from pathlib import Path
 from random import random, uniform
 import time
@@ -7,6 +7,9 @@ from unicodedata import name
 import requests
 import pickle
 import psycopg2
+from dotenv import load_dotenv
+import os
+
 
 @dataclass
 class Item:
@@ -23,14 +26,18 @@ def takeName(elem):
 # loop through dictionary -> getMarketValue
 # Write dictionary in excel file  "Name","Amount","MarketValueSingle","Value * amount", "users"
 
-#users = ["CasesAmStoren", "Undisputed_62","thealssla", "SWAG-StoreHustler", "CashflowAmLaufenErhalten"]
-#in the current version only thealssla is used with id 1
-users = ["thealssla"]
+load_dotenv()  # loads from .env file
+
+users = os.getenv("USERS").split(",")
+steam_login_secure = os.getenv("STEAM_LOGIN_SECURE")
+session_id = os.getenv("SESSION_ID")
+steamLoginSecure = os.getenv("STEAM_LOGIN_SECURE")
+session_id = os.getenv("SESSION_ID")
+changesInInventory = os.getenv("changesInInventory") == "True"
 user_id = 1
 dictionary = dict()
 sorted_dictionary = dict()
-steamLoginSecure = "76561198107140685%7C%7CeyAidHlwIjogIkpXVCIsICJhbGciOiAiRWREU0EiIH0.eyAiaXNzIjogInI6MDAwN18yNjkxRUNCMV84MUNCQSIsICJzdWIiOiAiNzY1NjExOTgxMDcxNDA2ODUiLCAiYXVkIjogWyAid2ViOmNvbW11bml0eSIgXSwgImV4cCI6IDE3NTQ2MDA4NDQsICJuYmYiOiAxNzQ1ODczOTA0LCAiaWF0IjogMTc1NDUxMzkwNCwgImp0aSI6ICIwMDA4XzI2QkMyN0Q0XzZGM0JEIiwgIm9hdCI6IDE3NTIwMDQ2NjEsICJydF9leHAiOiAxNzcwMDE4NDExLCAicGVyIjogMCwgImlwX3N1YmplY3QiOiAiMTQxLjcyLjIzMS4yMjAiLCAiaXBfY29uZmlybWVyIjogIjE0MS43Mi4yMzEuMjIwIiB9.w8_05npxzBguD8Nbw3WwbAnN028G2Y07p-qqk3DRw20W1TTJWlRdkkkFKFo-jKlVFBIZjoI0tP4nuOhvpYfPBQ"
-session_id = "de2b089e2e15f83b1eb5f773"
+
 headers = {
     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
                   "(KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36",
@@ -45,7 +52,7 @@ headers = {
 }
 
 # Connect to the PostgreSQL database
-connection = psycopg2.connect(database="steam_inventory", user="postgres", password="sudo", port=5432)
+connection = psycopg2.connect(database=os.getenv("DB_NAME"), user=os.getenv("DB_USER"), password=os.getenv("DB_PASSWORD"), port=os.getenv("DB_PORT"))
 cursor = connection.cursor()
 
 
@@ -143,8 +150,11 @@ def register_items_in_database():
 
 
 def fetch_market_and_register_daily_inventory():
-    today = date.today()
-    d1 = today.strftime("%d%m%Y")
+    today =  datetime.datetime.now()
+
+
+    today = today.strftime("%Y-%m-%d %H:%M:%S")
+    d1 = today.replace("-", "").replace(" ", "").replace(":", "")
     sorted_dictionary = fetch_inventory()
     # This will safely construct: PATH/InventoryTables/inventory/05082025.csv
     dataStrPath = PATH / 'InventoryTables' / 'inventory' / f'{d1}.csv'
@@ -216,8 +226,8 @@ def fetch_market_and_register_daily_inventory():
                     worth
                 )
                 cursor.execute(sql_insert, data)
-                print(f"Inserted {item_name_clean} into daily_inventory with amount {item_obj.amount} and worth {worth:.2f} EUR.")
                 connection.commit()
+                print(f"Inserted {item_name_clean} into daily_inventory with amount {item_obj.amount} and worth {worth:.2f} EUR.")
 
 
             else:
@@ -229,6 +239,7 @@ def fetch_market_and_register_daily_inventory():
 
 
 
+# For testing purposes only
 def manual_adding_of_items():
     # Emergency manual adding of items to the database
     itemJSON = Item(**{'classid': '721396034', 'amount': 1, 'users': 'thealssla', 'name': '★ Flip Knife | Doppler (Factory New)', 'marketable': 1})

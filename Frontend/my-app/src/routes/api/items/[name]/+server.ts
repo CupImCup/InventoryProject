@@ -8,6 +8,7 @@ export async function GET({ params }: { params: { name: string } }) {
     FROM daily_inventory di
     INNER JOIN items i ON di.item_id = i.id
     WHERE i.name = $1
+    ORDER BY date DESC
   `;
 
   try {

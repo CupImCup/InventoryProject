@@ -6,7 +6,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 export default defineConfig({
-	plugins: [tailwindcss(), sveltekit()],
+	plugins: [sveltekit()],
 	test: {
 		expect: { requireAssertions: true },
 		projects: [

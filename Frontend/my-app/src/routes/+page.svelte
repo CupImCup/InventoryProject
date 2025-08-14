@@ -1,35 +1,171 @@
 <script lang="ts">
-  import Header from '$lib/Header.svelte';
+  import { Button } from "flowbite-svelte";
   import { onMount } from 'svelte';
+  import { writable } from 'svelte/store';
+    
+  export let data;
+  
+  let inventory = data.inventory;
+  let dailyTotals = data.dailyTotals;
 
-  let items: { id: number; name: string; marketable: int }[] = [];
+  let chartDiv;
+  let chart;
+  let valueOfInventory: number = 0;
 
+  let userInput =  writable("");
   onMount(async () => {
-    const res = await fetch('/api/items');
-    items = await res.json();
+    if (!inventory || inventory.length === 0) return;
+    inventory.sort((a, b) => b.price_low_eur - a.price_low_eur);
+    inventory.forEach(element => {
+      if(!isNaN(Number(element.total_worth_eur))){
+        valueOfInventory += Number(element.total_worth_eur);
+      }
+    });
+    valueOfInventory = Number(valueOfInventory).toFixed(2);
 
-      // Sort items: marketable ones first
-  items.sort((a, b) => b.marketable - a.marketable);
+    await createGraph();
+
   });
+  async function createGraph(){
+    if (!dailyTotals || dailyTotals.length === 0) return;
+
+    const ApexCharts = (await import('apexcharts')).default;
+    const options = {
+      chart: { 
+        type: 'line', 
+        height: 350,
+        background: '#121212',     // Optional: dark background for chart area
+        foreColor: '#fff'          // General text color (axis, legend, etc)
+      },
+      series: [{
+        name: 'Worth',
+        data: dailyTotals.map(d => ({ x: d.date, y: d.total_worth}))
+      }],
+      xaxis: { 
+        type: 'datetime',
+        labels: {
+          style: {
+            colors: '#fff'        // White x-axis labels
+          }
+        },
+        axisBorder: { color: '#555' },  // subtle axis border color
+        axisTicks: { color: '#555' }    // subtle axis ticks color
+      },
+      yaxis: {
+        labels: {
+          style: {
+            colors: '#fff'        // White y-axis labels
+          }
+        },
+        axisBorder: { color: '#555' },
+        axisTicks: { color: '#555' }
+      },
+      tooltip: {
+        custom: ({dataPointIndex}) => {
+          const data = dailyTotals[dataPointIndex];
+          return `<div style="
+                background-color: #222;
+                color: #eee;
+                padding: 8px;
+                border-radius: 6px;
+                font-size: 0.9rem;
+                box-shadow: 0 0 8px rgba(0,0,0,0.7);
+              ">
+            <strong>Date:</strong> ${new Date(data.date).toLocaleDateString('de-DE', {
+              year: 'numeric',
+              month: '2-digit',
+              day: '2-digit'
+            })} <br/>
+            <strong>Total worth:</strong> ${data.total_worth} €
+          </div>`;
+        }
+      }
+    };
+
+        chart = new ApexCharts(chartDiv, options);
+        chart.render();
+
+        return () => {
+          if (chart) chart.destroy();
+        };
+  };
+  
+function handleOnSubmit(){
+    if (!userInput) return;
+
+    // Here you would typically send the userInput to your backend
+    console.log('User input:', userInput);
+  };
+
+  let sortAsc = true;
+function sortTable(column: string) {
+    if (!inventory || inventory.length === 0) return;
+     inventory = [...inventory].sort((a, b) => {
+      let valA, valB;
+      let key = column;
+      if (['amount', 'price_low_eur', 'total_worth_eur'].includes(key)) {
+        valA = Number(a[key]);
+        valB = Number(b[key]);
+      } else if (key === 'date') {
+        valA = new Date(a[key].split('.').reverse().join('-'));
+        valB = new Date(b[key].split('.').reverse().join('-'));
+      } else if (key === 'item_name') {
+        valA = a[key].toLowerCase();
+        valB = b[key].toLowerCase();
+      } else {
+        valA = a[key];
+        valB = b[key];
+      }
+
+      if (valA < valB) return sortAsc ? -1 : 1;
+      if (valA > valB) return sortAsc ? 1 : -1;
+      return 0;
+    });
+
+    sortAsc = !sortAsc;
+  };
 </script>
-
-<Header title="My PostgreSQL App" />
-
 <main>
-  <table>
+  <div bind:this={chartDiv}></div>
+  <table id="inventory-table">
     <thead>
       <tr>
-        <th>ID</th>
-        <th>Name</th>
-        <th>Marketable</th>
+        <th onclick={() => sortTable('date')}>Date</th>
+        <th onclick={() => sortTable('item_name')}>Item</th>
+        <th onclick={() => sortTable('amount')}>Amount</th>
+        <th onclick={() => sortTable('price_low_eur')}>Price Low (€)</th>
+  <!--            <th>Price Med (€)</th> -->
+        <th onclick={() => sortTable('total_worth_eur')}>Total Worth (€) {valueOfInventory}</th>
+        <th onclick={() => sortTable('user_name')}>User</th>
+      <!--<td>{entry.marketable}</td>-->
       </tr>
     </thead>
     <tbody>
-      {#each items as item}
+      {#each inventory as entry}
         <tr>
-          <td>{item.id}</td>
-          <td><a href={`/items/${encodeURIComponent(item.name)}`}>{item.name}</a></td>
-          <td>{item.marketable}</td>
+              <td>{new Date(entry.date).toLocaleDateString('de-DE', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit'
+              })}</td>
+          <td>
+            <a href={`/items/${encodeURIComponent(entry.item_name)}`}>
+              {entry.item_name}
+            </a>
+          </td>
+          <td>{entry.amount}</td>
+          <td>
+            {#if entry.price_low_eur > 0}
+                {entry.price_low_eur}
+              {:else if entry.price_med_eur > 0}
+                {entry.price_med_eur} (Median)
+              {:else}
+                <span>--</span>
+              {/if}
+          </td>
+          <td>{entry.total_worth_eur}</td>
+          <td>{entry.user_name}</td>
+<!--      <td>{entry.marketable}</td> -->
         </tr>
       {/each}
     </tbody>
@@ -50,5 +186,11 @@
   th, td {
     padding: 0.5rem;
     border: 1px solid #555;
+  }
+
+    .dark-page {
+    background-color: #333333;
+    color: #eee;
+    padding: 1rem;
   }
 </style>
