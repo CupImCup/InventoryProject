@@ -10,8 +10,8 @@ Forntend Page view:
 Single Item view:
 ![alt text](Frontend-Itemview-1.png)
 
-TODO: 
-[] Clean up Frontend
-[] Implement usage of steam microservice data 
-    [] Index Storage Unit contents
+#TODO: 
+- Clean up Frontend
+- Implement usage of steam microservice data 
+- Index Storage Unit contents
  
