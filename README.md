@@ -4,9 +4,8 @@
 
   
 Current working Frontend
+Forntend Page:
+![alt text](Frontend-Pageview.png)
 
-Frontend Pageview: 
-![alt text](Images\Frontend-Pageview.png "Frontend Pageview")
-
-Single Item view:
-![alt text] Images\Frontend-Itemview.png "Item View"
+Single Item:
+![alt text](Frontend-Itemview.png)
