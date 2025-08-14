@@ -248,7 +248,7 @@ def manual_adding_of_items():
     response = requests.get(
                     f"https://steamcommunity.com/market/priceoverview/?currency=3&appid=730&market_hash_name={itemJSON.name}"
     )
-    today = date.today()
+    today = datetime.today()
     d1 = today.strftime("%d%m%Y")
     if response.ok:
         ISPRICEFETCHED = True
