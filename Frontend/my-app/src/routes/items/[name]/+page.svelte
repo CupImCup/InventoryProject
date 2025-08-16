@@ -12,6 +12,25 @@
 
     // Dynamically import ApexCharts only on client
     const ApexCharts = (await import('apexcharts')).default;
+
+    inventory.map(d => {
+      if (!(d.price_low_eur > 0)) {
+        if (!(d.price_med_eur > 0)) {
+          // Neither low nor medium prices are available
+          if (!(d.total_worth_eur > 0)) {
+            // No prices are available
+            console.log('No prices available for item:', d);
+          }
+          else {
+            // Only total worth is available
+            d.price_low_eur = d.total_worth_eur / d.amount;
+          }
+        } else {
+          // Only low price is available
+          d.price_low_eur = d.price_med_eur;
+        }
+      } 
+    });
     const options = {
       chart: { 
         type: 'line', 
