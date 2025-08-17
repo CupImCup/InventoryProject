@@ -144,6 +144,7 @@ function sortTable(column: string) {
       {#each inventory as entry}
         <tr>
               <td>{new Date(entry.date).toLocaleDateString('de-DE', {
+                weekday: "short",
                 year: 'numeric',
                 month: '2-digit',
                 day: '2-digit'

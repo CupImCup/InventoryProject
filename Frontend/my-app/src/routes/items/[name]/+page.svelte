@@ -72,7 +72,8 @@
                 font-size: 0.9rem;
                 box-shadow: 0 0 8px rgba(0,0,0,0.7);
               ">
-            <strong>Date:</strong> ${new Date(data.date).toLocaleDateString('de-DE', {
+            <strong>Date:</strong> ${new Date(data.date).toLocaleDateString('en-US', {
+              weekday: "short",
               year: 'numeric',
               month: '2-digit',
               day: '2-digit'
