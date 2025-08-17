@@ -35,7 +35,7 @@ Running the Server
 
 uvicorn main:app --reload
 
-# Features
+## Features
 
     Registers and tracks Steam inventories
 
@@ -49,7 +49,7 @@ uvicorn main:app --reload
 
         Single-item history
 
-# Preview
+## Preview
 
 Frontend Page View:
 ![alt text](Frontend-Pageview.png)
@@ -59,7 +59,7 @@ Single Item View:
 
 ![alt text](Frontend-Itemview-1.png)
 
-# TODO
+## TODO
 
     Clean up frontend integration
 
