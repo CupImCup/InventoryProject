@@ -1,0 +1,7 @@
+[project]
+name = "ptdraft"
+version = "0.1.0"
+description = "My small project"
+
+[tool.setuptools]
+py-modules = []

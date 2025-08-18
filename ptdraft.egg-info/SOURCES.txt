@@ -1,0 +1,7 @@
+README.md
+pyproject.toml
+ptdraft.egg-info/PKG-INFO
+ptdraft.egg-info/SOURCES.txt
+ptdraft.egg-info/dependency_links.txt
+ptdraft.egg-info/top_level.txt
+tests/test.py

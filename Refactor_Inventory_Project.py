@@ -37,9 +37,6 @@ class jsonItem:
     Others: list
     Patches: list
 
-def takeName(elem):
-    return dictionary[elem]
-
 # Fetch inventory for every user -> add to dictonary with (user, amount)
 # loop through dictionary -> getMarketValue
 # Write dictionary in excel file  "Name","Amount","MarketValueSingle","Value * amount", "users"
@@ -55,6 +52,8 @@ changesInInventory = os.getenv("changesInInventory") == "True"
 user_id = 1
 dictionary = dict()
 sorted_dictionary = dict()
+changesInInventory = False
+
 #pythonProxy = pythonProxy()
 
 headers = {
@@ -75,7 +74,6 @@ connection = psycopg2.connect(database=os.getenv("DB_NAME"), user=os.getenv("DB_
 cursor = connection.cursor()
 
 
-changesInInventory = False
 
 # Get script directory
 PATH = Path(__file__).parent
@@ -98,8 +96,8 @@ for category in inventory_data:
     for item_name in inventory_data[category]:
         value = inventory_data[category][item_name] 
         print(item_name, value)
-        
-        # Find the matching sublist in database_items
+
+        # Appending amount-value to the database item (id, name, amount)
         for sublist in database_items:
             if sublist[1] == item_name:
                 sublist.append(value)  # Add only to the matching item
@@ -120,8 +118,6 @@ def fetch_inventory():
                     ISFAIRREQUEST = True
                     print("Status code: " + str(inventory.status_code))
                     invData = inventory.json()
-
-
                     # Step 1: Count amount and collect user info for each classid
                     for item in invData["rgInventory"].values():
                         classid = item["classid"]
@@ -150,7 +146,8 @@ def fetch_inventory():
         for item in database_items:
             classid = item[0]
             name = item[1]
-            amount = item[2] if len(item) > 2 else 1  # Default amount to 1 if not specified
+            amount = item[2] if len(item) > 2 else 0  # Default amount to 0 if not specified
+            # Currently user will always be "thealssla", marketable always = 1 is a TODO problem but not mission critical
             dictionary[classid] = Item(classid=classid, name=name, amount=amount, users="thealssla", marketable=1)
 
     #sort inventory
