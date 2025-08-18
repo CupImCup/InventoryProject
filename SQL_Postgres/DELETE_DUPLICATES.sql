@@ -12,9 +12,9 @@ WITH duplicates AS (
         ) AS row_num
     FROM daily_inventory
 )
-DELETE FROM daily_inventory
-WHERE id IN (
-    SELECT id
-    FROM duplicates
-    WHERE row_num > 1
-);
+
+--RUN to view duplicates
+SELECT * FROM daily_inventory INNER JOIN items ON daily_inventory.item_id = items.id WHERE daily_inventory.id IN (     SELECT id     FROM duplicates      WHERE row_num > 1) ORDER BY items.name ASC ;
+
+--RUN to delete duplicates 
+--DELETE FROM daily_inventory WHERE daily_inventory.id IN (     SELECT id    FROM duplicates     WHERE row_num > 1);

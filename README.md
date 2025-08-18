@@ -63,8 +63,12 @@ Single Item View:
 
     Clean up frontend integration
 
-    Implement usage of Steam microservice data
+    Create Threading for fetch-request
 
-    Index storage unit contents
+    Create private proxy service
+
+    Ideas of Raspberry Pi
+
+    
 
  
