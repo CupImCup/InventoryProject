@@ -19,7 +19,7 @@
     inventory.sort((a, b) => b.price_low - a.price_low);
     inventory.forEach(element => {
       if(!isNaN(Number(element.total_worth))){
-        valueOfInventory += Number(element.total_worth);
+        valueOfInventory += Number(Number(element.total_worth).toFixed(2));
       }
     });
     valueOfInventory = Number(valueOfInventory).toFixed(2);
@@ -41,7 +41,7 @@
       },
       series: [{
         name: 'Worth',
-        data: dailyTotals.map(d => ({ x: d.inventory_date, y: d.total_worth}))
+        data: dailyTotals.map(d => ({ x: d.inventory_date, y: Number(d.total_worth).toFixed(2) }))
       }],
       xaxis: { 
         type: 'datetime',
@@ -78,7 +78,7 @@
               month: '2-digit',
               day: '2-digit'
             })} <br/>
-            <strong>Total worth:</strong> ${data.total_worth} €
+            <strong>Total worth:</strong> ${Number(data.total_worth).toFixed(2)} €
           </div>`;
         }
       }
@@ -169,7 +169,7 @@ function sortTable(column: string) {
                 <span>--</span>
               {/if}
           </td>
-          <td>{entry.total_worth}</td>
+          <td>{Number(entry.total_worth).toFixed(2)}</td>
           <td>{entry.user_name}</td>
           <td>
             {#if entry.price_med > 0}
