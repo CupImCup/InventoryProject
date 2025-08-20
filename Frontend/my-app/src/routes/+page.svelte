@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Button } from "flowbite-svelte";
+  import { Button, search } from "flowbite-svelte";
   import { onMount } from 'svelte';
   import { writable } from 'svelte/store';
     
@@ -8,7 +8,7 @@
   let inventory = data.inventory;
   let dailyTotals = data.dailyTotals;
   //inventory []
-
+  const INVENTORY_CONST = [...inventory];
   let chartDiv;
   let chart;
   let valueOfInventory: number = 0;
@@ -91,13 +91,21 @@
           if (chart) chart.destroy();
         };
   };
-  
-function handleOnSubmit(){
-    if (!userInput) return;
 
-    // Here you would typically send the userInput to your backend
-    console.log('User input:', userInput);
-  };
+function matches(input, query) {
+  return input.toLowerCase().includes(query.toLowerCase());
+}
+function handleOnSubmit(){
+  if (!userInput) return;
+  const userInputValue = $userInput.trim().toLowerCase();
+  if (userInputValue === '') {
+    inventory = INVENTORY_CONST;
+  } else {
+    inventory = INVENTORY_CONST.filter(item =>
+      matches(item.item_name, userInputValue)
+    );
+  }
+};
 
   let sortAsc = true;
 function sortTable(column: string) {
@@ -153,9 +161,16 @@ function sortTable(column: string) {
   sortAsc = !sortAsc;
 }
 
+
+function handleKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Enter') {
+      handleOnSubmit();
+    }
+  }
 </script>
 <main>
   <div bind:this={chartDiv}></div>
+  <input style="width: 100%; padding: 8px; border: 1px solid #555; border-radius: 4px; background: #222; color: white;" type="text" bind:value={$userInput} placeholder="Search Item Name..." onkeyup={handleOnSubmit}/>
   <table id="inventory-table">
     <thead>
       <tr>

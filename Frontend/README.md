@@ -1,4 +1,4 @@
-# Inventory Web App
+# Inventory Web App (Frontend)
 
 This is the frontend for the Inventory Project. It provides a interface to explore Steam inventory data, item prices, and total worth over time.
 
