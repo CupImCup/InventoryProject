@@ -7,6 +7,7 @@
   
   let inventory = data.inventory;
   let dailyTotals = data.dailyTotals;
+  //inventory []
 
   let chartDiv;
   let chart;
@@ -15,10 +16,10 @@
   let userInput =  writable("");
   onMount(async () => {
     if (!inventory || inventory.length === 0) return;
-    inventory.sort((a, b) => b.price_low_eur - a.price_low_eur);
+    inventory.sort((a, b) => b.price_low - a.price_low);
     inventory.forEach(element => {
-      if(!isNaN(Number(element.total_worth_eur))){
-        valueOfInventory += Number(element.total_worth_eur);
+      if(!isNaN(Number(element.total_worth))){
+        valueOfInventory += Number(element.total_worth);
       }
     });
     valueOfInventory = Number(valueOfInventory).toFixed(2);
@@ -26,6 +27,7 @@
     await createGraph();
 
   });
+
   async function createGraph(){
     if (!dailyTotals || dailyTotals.length === 0) return;
 
@@ -39,7 +41,7 @@
       },
       series: [{
         name: 'Worth',
-        data: dailyTotals.map(d => ({ x: d.date, y: d.total_worth}))
+        data: dailyTotals.map(d => ({ x: d.inventory_date, y: d.total_worth}))
       }],
       xaxis: { 
         type: 'datetime',
@@ -71,7 +73,7 @@
                 font-size: 0.9rem;
                 box-shadow: 0 0 8px rgba(0,0,0,0.7);
               ">
-            <strong>Date:</strong> ${new Date(data.date).toLocaleDateString('de-DE', {
+            <strong>Date:</strong> ${new Date(data.inventory_date).toLocaleDateString('de-DE', {
               year: 'numeric',
               month: '2-digit',
               day: '2-digit'
@@ -103,10 +105,10 @@ function sortTable(column: string) {
      inventory = [...inventory].sort((a, b) => {
       let valA, valB;
       let key = column;
-      if (['amount', 'price_low_eur', 'total_worth_eur'].includes(key)) {
+      if (['amount', 'price_low', 'total_worth'].includes(key)) {
         valA = Number(a[key]);
         valB = Number(b[key]);
-      } else if (key === 'date') {
+      } else if (key === 'inventory_date') {
         valA = new Date(a[key].split('.').reverse().join('-'));
         valB = new Date(b[key].split('.').reverse().join('-'));
       } else if (key === 'item_name') {
@@ -130,20 +132,22 @@ function sortTable(column: string) {
   <table id="inventory-table">
     <thead>
       <tr>
-        <th onclick={() => sortTable('date')}>Date</th>
+        <th onclick={() => sortTable('inventory_date')}>Date</th>
         <th onclick={() => sortTable('item_name')}>Item</th>
+        <th onclick={() => sortTable('item_category')}>Category</th>
         <th onclick={() => sortTable('amount')}>Amount</th>
-        <th onclick={() => sortTable('price_low_eur')}>Price Low (€)</th>
+        <th onclick={() => sortTable('price_low')}>Price Low (€)</th>
   <!--            <th>Price Med (€)</th> -->
-        <th onclick={() => sortTable('total_worth_eur')}>Total Worth (€) {valueOfInventory}</th>
+        <th onclick={() => sortTable('total_worth')}>Total Worth (€) {valueOfInventory}</th>
         <th onclick={() => sortTable('user_name')}>User</th>
+        <th onclick={() => sortTable('price_med')}>Price Med (€)</th>
       <!--<td>{entry.marketable}</td>-->
       </tr>
     </thead>
     <tbody>
       {#each inventory as entry}
         <tr>
-              <td>{new Date(entry.date).toLocaleDateString('de-DE', {
+          <td>{new Date(entry.inventory_date).toLocaleDateString('de-DE', {
                 weekday: "short",
                 year: 'numeric',
                 month: '2-digit',
@@ -154,19 +158,28 @@ function sortTable(column: string) {
               {entry.item_name}
             </a>
           </td>
+          <td>{entry.item_category}</td>
           <td>{entry.amount}</td>
           <td>
-            {#if entry.price_low_eur > 0}
-                {entry.price_low_eur}
-              {:else if entry.price_med_eur > 0}
-                {entry.price_med_eur} (Median)
+            {#if entry.price_low > 0}
+                {entry.price_low}
+              {:else if entry.price_med > 0}
+                {entry.price_med} (Median)
               {:else}
                 <span>--</span>
               {/if}
           </td>
-          <td>{entry.total_worth_eur}</td>
+          <td>{entry.total_worth}</td>
           <td>{entry.user_name}</td>
-<!--      <td>{entry.marketable}</td> -->
+          <td>
+            {#if entry.price_med > 0}
+              {entry.price_med}
+            {:else if entry.price_low > 0}
+              {entry.price_low} (Low)
+            {:else}
+              <span>--</span>
+            {/if}
+          </td>
         </tr>
       {/each}
     </tbody>
@@ -189,7 +202,7 @@ function sortTable(column: string) {
     border: 1px solid #555;
   }
 
-    .dark-page {
+  .dark-page {
     background-color: #333333;
     color: #eee;
     padding: 1rem;

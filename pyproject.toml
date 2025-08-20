@@ -1,7 +1,7 @@
 [project]
-name = "ptdraft"
+name = "Inventoryproject"
 version = "0.1.0"
-description = "My small project"
+description = "My Inventoryproject"
 
 [tool.setuptools]
 py-modules = []
