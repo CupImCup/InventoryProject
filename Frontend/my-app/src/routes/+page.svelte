@@ -101,31 +101,41 @@ function handleOnSubmit(){
 
   let sortAsc = true;
 function sortTable(column: string) {
-    if (!inventory || inventory.length === 0) return;
-     inventory = [...inventory].sort((a, b) => {
-      let valA, valB;
-      let key = column;
-      if (['amount', 'price_low', 'total_worth'].includes(key)) {
-        valA = Number(a[key]);
-        valB = Number(b[key]);
-      } else if (key === 'inventory_date') {
-        valA = new Date(a[key].split('.').reverse().join('-'));
-        valB = new Date(b[key].split('.').reverse().join('-'));
-      } else if (key === 'item_name') {
-        valA = a[key].toLowerCase();
-        valB = b[key].toLowerCase();
-      } else {
-        valA = a[key];
-        valB = b[key];
-      }
+  if (!inventory || inventory.length === 0) return;
 
-      if (valA < valB) return sortAsc ? -1 : 1;
-      if (valA > valB) return sortAsc ? 1 : -1;
-      return 0;
-    });
+  inventory = [...inventory].sort((a, b) => {
+    let valA: any, valB: any;
+    const key = column;
+    if (['amount', 'price_low', 'total_worth'].includes(key)) {
+      valA = Number(a[key]);
+      valB = Number(b[key]);
+    } else if (key === 'inventory_date') {
+      const [dA, mA, yA] = String(a[key]).split('.');
+      const [dB, mB, yB] = String(b[key]).split('.');
+      valA = new Date(+yA, +mA - 1, +dA).getTime();
+      valB = new Date(+yB, +mB - 1, +dB).getTime();
+    } else {
+      valA = String(a[key] ?? '').toLowerCase().trim();
+      valB = String(b[key] ?? '').toLowerCase().trim();
+    }
+    if (valA < valB) return sortAsc ? -1 : 1;
+    if (valA > valB) return sortAsc ? 1 : -1;
 
-    sortAsc = !sortAsc;
-  };
+    // tie-breaker: if sorting by category, use price_low
+    if (key === 'item_category') {
+      console.log('Sorting by category:', a[key], b[key]);  
+      const pA = Number(a.price_low);
+      const pB = Number(b.price_low);
+      if (pA < pB) return 1; // always ascending
+      if (pA > pB) return -1;
+    }
+
+    return 0;
+  });
+
+  sortAsc = !sortAsc;
+}
+
 </script>
 <main>
   <div bind:this={chartDiv}></div>
