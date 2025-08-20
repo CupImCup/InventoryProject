@@ -107,10 +107,9 @@ function handleOnSubmit(){
   }
 };
 
-  let sortAsc = true;
+let sortAsc = true;
 function sortTable(column: string) {
   if (!inventory || inventory.length === 0) return;
-
   inventory = [...inventory].sort((a, b) => {
     let valA: any, valB: any;
     const key = column;
@@ -148,7 +147,6 @@ function sortTable(column: string) {
 
     // tie-breaker: if sorting by category, use price_low
     if (key === 'item_category') {
-      console.log('Sorting by category:', a[key], b[key]);  
       const pA = Number(a.price_low);
       const pB = Number(b.price_low);
       if (pA < pB) return 1; // always ascending
@@ -159,6 +157,18 @@ function sortTable(column: string) {
   });
 
   sortAsc = !sortAsc;
+
+  // reset ALL headers to no arrow
+  const headers = document.querySelectorAll("th");
+  headers.forEach(h => {
+    h.innerHTML = h.innerHTML.replace(/▴|▾/g, "");
+  });
+
+  // add arrow only to the active header
+  const header = document.getElementById(column);
+  if (header) {
+    header.innerHTML = header.innerHTML.replace(/▴|▾/g, "") + (sortAsc ? " ▴" : " ▾");
+  }
 }
 
 
@@ -174,15 +184,14 @@ function handleKeyDown(event: KeyboardEvent) {
   <table id="inventory-table">
     <thead>
       <tr>
-        <th onclick={() => sortTable('inventory_date')}>Date</th>
-        <th onclick={() => sortTable('item_name')}>Item</th>
-        <th onclick={() => sortTable('item_category')}>Category</th>
-        <th onclick={() => sortTable('amount')}>Amount</th>
-        <th onclick={() => sortTable('price_low')}>Price Low (€)</th>
-  <!--            <th>Price Med (€)</th> -->
-        <th onclick={() => sortTable('total_worth')}>Total Worth (€) {valueOfInventory}</th>
-        <th onclick={() => sortTable('user_name')}>User</th>
-        <th onclick={() => sortTable('price_med')}>Price Med (€)</th>
+        <th id="inventory_date" onclick={() => sortTable('inventory_date')}>Date</th>
+        <th id="item_name" onclick={() => sortTable('item_name')}>Item &#x25b4;&#x25be;</th>
+        <th id="item_category" onclick={() => sortTable('item_category')}>Category &#x25b4;&#x25be;</th>
+        <th id="amount" onclick={() => sortTable('amount')}>Amount &#x25b4;&#x25be;</th>
+        <th id="price_low" onclick={() => sortTable('price_low')}>Price Low (€) &#x25b4;&#x25be;</th>
+        <th id="total_worth" onclick={() => sortTable('total_worth')}>Total Worth (€) {valueOfInventory} &#x25b4;&#x25be;</th>
+        <th id="user_name" onclick={() => sortTable('user_name')}>User &#x25b4;&#x25be;</th>
+        <th id="price_med" onclick={() => sortTable('price_med')}>Price Med (€) &#x25b4;&#x25be;</th>
       <!--<td>{entry.marketable}</td>-->
       </tr>
     </thead>
