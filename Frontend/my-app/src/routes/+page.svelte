@@ -106,7 +106,7 @@ function sortTable(column: string) {
   inventory = [...inventory].sort((a, b) => {
     let valA: any, valB: any;
     const key = column;
-    if (['amount', 'price_low', 'total_worth'].includes(key)) {
+    if (['amount', 'price_low', 'price_med', 'total_worth'].includes(key)) {
       valA = Number(a[key]);
       valB = Number(b[key]);
     } else if (key === 'inventory_date') {
@@ -117,6 +117,23 @@ function sortTable(column: string) {
     } else {
       valA = String(a[key] ?? '').toLowerCase().trim();
       valB = String(b[key] ?? '').toLowerCase().trim();
+    }
+    //just in case
+    if( key === 'price_med' ) {
+      if(valA == 0) {
+        valA = Number(a['price_low']);
+      }
+      if(valB == 0) {
+        valB = Number(b['price_low']);
+      }
+    }
+    if (key === 'price_low') {
+      if (valA == 0) {
+        valA = Number(a['price_med']);
+      }
+      if (valB == 0) {
+        valB = Number(b['price_med']);
+      }
     }
     if (valA < valB) return sortAsc ? -1 : 1;
     if (valA > valB) return sortAsc ? 1 : -1;
