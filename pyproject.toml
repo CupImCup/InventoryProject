@@ -1,0 +1,7 @@
+[project]
+name = "Inventoryproject"
+version = "0.1.0"
+description = "My Inventoryproject"
+
+[tool.setuptools]
+py-modules = []

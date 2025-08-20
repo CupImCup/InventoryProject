@@ -10,24 +10,24 @@
     (async () => {
     if (!inventory || inventory.length === 0) return;
 
-    // Dynamically import ApexCharts only on client
+    // Dynamically import ApexCharts only on clientloading
     const ApexCharts = (await import('apexcharts')).default;
 
     inventory.map(d => {
-      if (!(d.price_low_eur > 0)) {
-        if (!(d.price_med_eur > 0)) {
+      if (!(d.price_low > 0)) {
+        if (!(d.price_med > 0)) {
           // Neither low nor medium prices are available
-          if (!(d.total_worth_eur > 0)) {
+          if (!(d.total_worth > 0)) {
             // No prices are available
             console.log('No prices available for item:', d);
           }
           else {
             // Only total worth is available
-            d.price_low_eur = d.total_worth_eur / d.amount;
+            d.price_low = d.total_worth / d.amount;
           }
         } else {
           // Only low price is available
-          d.price_low_eur = d.price_med_eur;
+          d.price_low = d.price_med;
         }
       } 
     });
@@ -40,7 +40,7 @@
       },
       series: [{
         name: 'Price',
-        data: inventory.map(d => ({ x: d.date, y: d.price_low_eur, amount: d.amount}))
+        data: inventory.map(d => ({ x: d.inventory_date, y: d.price_low, amount: d.amount}))
       }],
       xaxis: { 
         type: 'datetime',
@@ -72,15 +72,15 @@
                 font-size: 0.9rem;
                 box-shadow: 0 0 8px rgba(0,0,0,0.7);
               ">
-            <strong>Date:</strong> ${new Date(data.date).toLocaleDateString('en-US', {
+            <strong>Date:</strong> ${new Date(data.inventory_date).toLocaleDateString('en-US', {
               weekday: "short",
               year: 'numeric',
               month: '2-digit',
               day: '2-digit'
             })} <br/>
-            <strong>Price:</strong> ${data.price_low_eur} €<br/>
+            <strong>Price:</strong> ${data.price_low} €<br/>
             <strong>Amount:</strong> ${data.amount} <br/>
-            <strong>Total worth:</strong> ${data.total_worth_eur} €
+            <strong>Total worth:</strong> ${data.total_worth} €
           </div>`;
         }
       }
@@ -101,7 +101,7 @@
   <a href="/" class="back-arrow" aria-label="Go back to main page">
     ← Back
   </a>
-  <h1>{inventory[0]?.name || 'Loading...'}</h1>
+  <h1>{inventory[0]?.item_name || 'Loading...'}</h1>
 
   <div bind:this={chartDiv}></div>
 </div>

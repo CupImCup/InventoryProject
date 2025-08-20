@@ -1,0 +1,7 @@
+README.md
+pyproject.toml
+Inventoryproject.egg-info/PKG-INFO
+Inventoryproject.egg-info/SOURCES.txt
+Inventoryproject.egg-info/dependency_links.txt
+Inventoryproject.egg-info/top_level.txt
+tests/test.py

@@ -5,10 +5,9 @@ export async function GET({ params }: { params: { name: string } }) {
 
   const sql = `
     SELECT *
-    FROM daily_inventory di
-    INNER JOIN items i ON di.item_id = i.id
-    WHERE i.name = $1
-    ORDER BY date DESC
+    FROM new_daily_inventory di
+    WHERE di.item_name = $1
+    ORDER BY di.inventory_date DESC
   `;
 
   try {
