@@ -10,7 +10,7 @@
     (async () => {
     if (!inventory || inventory.length === 0) return;
 
-    // Dynamically import ApexCharts only on client
+    // Dynamically import ApexCharts only on clientloading
     const ApexCharts = (await import('apexcharts')).default;
 
     inventory.map(d => {
@@ -101,7 +101,7 @@
   <a href="/" class="back-arrow" aria-label="Go back to main page">
     ← Back
   </a>
-  <h1>{inventory[0]?.name || 'Loading...'}</h1>
+  <h1>{inventory[0]?.item_name || 'Loading...'}</h1>
 
   <div bind:this={chartDiv}></div>
 </div>
