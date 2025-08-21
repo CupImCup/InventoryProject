@@ -45,7 +45,7 @@
         selectedTotal[item.inventory_date] = Number(selectedTotal[item.inventory_date]) + Number(Number(item.total_worth).toFixed(2));
       }
     });
-    
+    displayInventory.sort((a, b) => new Date(a.inventory_date).getTime() - new Date(b.inventory_date).getTime());
     valueOfInventory = selectedTotal[DATABASE_TODAY].toFixed(2) || 0;
     console.log("Today", DATABASE_TODAY, "value", valueOfInventory, "selectedTotal", selectedTotal);
     document.getElementById('total_worth').innerText = "Total Worth (€)" + valueOfInventory;
@@ -59,7 +59,7 @@
       },
       series: [{
         name: 'Worth',
-        data: displayInventory.map(d => ({ x: d.inventory_date, y: Number(selectedTotal[d.inventory_date]).toFixed(2), amount: d.amount}))
+        data: displayInventory.map(d => ({ x: d.inventory_date, y: Number(selectedTotal[d.inventory_date]).toFixed(2)}))
       }],
       markers: {
         size: 2,        // dot size
@@ -88,11 +88,13 @@
         axisTicks: { color: '#555' }
       },
       tooltip: {
-        custom: ({seriesIndex}) => {
-          var key = Object.keys(selectedTotal)[seriesIndex];
-          var value = selectedTotal[key];
-          console.log("Tooltip data:", key, value);
-          console.log("Data point index:", seriesIndex);
+          custom: ({ seriesIndex, dataPointIndex, w }) => {
+          // Access the original point object
+          const point = w.config.series[seriesIndex].data[dataPointIndex];
+
+          const key   = point.x;       // your date (inventory_date)
+          const value = point.y;       // your numeric value
+
           return `<div style="
                 background-color: #222;
                 color: #eee;
@@ -106,16 +108,16 @@
               month: '2-digit',
               day: '2-digit'
             })} <br/>
-            <strong>Total worth:</strong> ${Number(value).toFixed(2)} €
+            <strong>Value:</strong> ${value} €<br/>
           </div>`;
         }
       }
-    };
+    }
     //reset Headers
     sortTable();
     if (chart) chart.destroy();
-      chart = new ApexCharts(chartDiv, options);
-      chart.render();
+    chart = new ApexCharts(chartDiv, options);
+    chart.render();
 
       return () => {
         if (chart) chart.destroy();
