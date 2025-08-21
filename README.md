@@ -1,74 +1,24 @@
-# InventoryProject (Backend)
+# InventoryProject
 
-This backend service tracks Steam user inventories and stores item data in a PostgreSQL database. It also provides endpoints for retrieving item prices, daily worth, and historical data for frontend visualization.
-
-## ⚙️ Tech Stack
-- **Python 3.10+**
-- **PostgreSQL** for database storage
-
-## 🚀 Getting Started
-
-### Prerequisites
-- [Python](https://www.python.org/downloads/) (>= 3.10)
-- [PostgreSQL](https://www.postgresql.org/) running locally or remotely
-- pip / virtualenv
-
-### Installation
-1. Clone the repository
-   ```bash
-   git clone <your-repo-url>
-   cd <backend-folder>
-    ```
-    Create and activate a virtual environment
-
-python -m venv venv
-source venv/bin/activate   # Linux / macOS
-venv\Scripts\activate      # Windows
-
-Install dependencies
-
-    pip install -r requirements.txt
-
-    Configure environment variables in .env (e.g. database URL, API keys)
-
-Running the Server
-
-uvicorn main:app --reload
+A hobby project for tracking and analyzing Steam inventories.
+Originally built out of personal interest and because I thought it was fun — later polished into a showcase project demonstrating database design, API development, and frontend visualization.
 
 ## Features
+- Registers and tracks Steam inventories  
+- Fetches market values using proxy servers and multithreading (runtime reduced from ~10 hours to ~3 minutes)  
+- Stores data in PostgreSQL  
+- Provides a frontend for item tracking, filtering, and visualization  
 
-    Registers and tracks Steam inventories
-
-    Stores data in PostgreSQL
-
-    Provides API endpoints for:
-
-        Daily item prices
-
-        Inventory worth by date
-
-        Single-item history
+## Tech Stack
+- Python  
+- PostgreSQL  
+- Svelte  
+- Docker  
 
 ## Preview
 
-Frontend Page View:
-![alt text](Frontend-Pageview.png)
+**Frontend page view**  
+![Frontend page](Animation.gif)
 
-
-Single Item View:
-
-![alt text](Frontend-Itemview-1.png)
-
-## TODO
-
-    Clean up frontend integration
-
-    Create Threading for fetch-request
-
-    Create private proxy service
-
-    Ideas of Raspberry Pi
-
-    
-
- 
+**Single item view**  
+![Item view](Frontend-Itemview-1.png)

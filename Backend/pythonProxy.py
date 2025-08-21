@@ -121,9 +121,10 @@ def fetch_price(item: JSONItem, maxRetries=500):
 
 def testFetchViaList(listOfItems, results, id):
     # [JSONItem(ItemDefinition=ItemDefinition(Name='Patch', Category='Patches'), amount=2), ...]
+    knownFaultyItems = ["Patch", "CS:GO Weapon Case"]
     for item in listOfItems:
         # Known faulty item Patch
-        if item.ItemDefinition.Name == "Patch":
+        if item.ItemDefinition.Name in knownFaultyItems:
             print(f"Skipping empty item in thread {id}")
             continue
         response = fetch_price(item)
