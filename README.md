@@ -1,7 +1,7 @@
 # InventoryProject
 
 A fun, hobby project for tracking and analyzing Steam inventories.
-I built this initially for personal use because I thought it was cool. Later, I refined it into a showcase of my skills in API development, database design, and frontend visualization.
+I built this initially for personal use and because I thought it was cool. Later, I refined it into a showcase of my skills in API development, database design, and frontend visualization.
 
 ## Features
 - Tracks Steam inventories and logs item data over time  
@@ -13,12 +13,12 @@ I built this initially for personal use because I thought it was cool. Later, I 
 - Python backend (Steam microservice)  
 - PostgreSQL (schema in `SQL_Postgres`)  
 - Svelte + TypeScript frontend  
-- Docker (if applicable)
+- Docker 
 
 ## Preview
 
 **Frontend page view**  
-![Frontend view](Frontend-Pageview.png)
+![alt text](Animation-1.gif)
 
 **Single item details**  
 ![Item view](Frontend-Itemview-1.png)
