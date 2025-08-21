@@ -2,13 +2,20 @@
   import { Button, search } from "flowbite-svelte";
   import { onMount } from 'svelte';
   import { writable } from 'svelte/store';
-    
+
   export let data;
   
   let inventory = data.inventory;
-  let dailyTotals = data.dailyTotals;
+
+
+  let justTodaysInventory = inventory.filter(item => item.inventory_date === item.current_date);
+  
   //inventory []
-  const INVENTORY_CONST = [...inventory];
+  const COMPLETE_INVENTORY = [...inventory];
+  const DAILY_INVENTORY = [...justTodaysInventory];
+  const DATABASE_TODAY = inventory[0]?.current_date;
+  console.log("data_fetched:")
+  console.log(COMPLETE_INVENTORY);
   let chartDiv;
   let chart;
   let valueOfInventory: number = 0;
@@ -17,20 +24,31 @@
   onMount(async () => {
     if (!inventory || inventory.length === 0) return;
     inventory.sort((a, b) => b.price_low - a.price_low);
-    inventory.forEach(element => {
-      if(!isNaN(Number(element.total_worth))){
-        valueOfInventory += Number(Number(element.total_worth).toFixed(2));
-      }
-    });
-    valueOfInventory = Number(valueOfInventory).toFixed(2);
-
     await createGraph();
-
   });
 
   async function createGraph(){
-    if (!dailyTotals || dailyTotals.length === 0) return;
+    if (!COMPLETE_INVENTORY || COMPLETE_INVENTORY.length === 0) return;
+    valueOfInventory = 0;
+    let selectedTotal = {};
+    const userInputValue = $userInput.trim().toLowerCase();
 
+    let displayInventory = COMPLETE_INVENTORY.filter(item =>
+      matches(item.item_name, userInputValue)
+    );
+    
+    displayInventory.forEach(item => {
+      if(selectedTotal[item.inventory_date] === undefined) {
+        selectedTotal[item.inventory_date] = 0;
+      }
+      if (!isNaN(Number(item.total_worth))) {
+        selectedTotal[item.inventory_date] = Number(selectedTotal[item.inventory_date]) + Number(Number(item.total_worth).toFixed(2));
+      }
+    });
+    
+    valueOfInventory = selectedTotal[DATABASE_TODAY].toFixed(2) || 0;
+    console.log("Today", DATABASE_TODAY, "value", valueOfInventory, "selectedTotal", selectedTotal);
+    document.getElementById('total_worth').innerText = "Total Worth (€)" + valueOfInventory;
     const ApexCharts = (await import('apexcharts')).default;
     const options = {
       chart: { 
@@ -41,8 +59,15 @@
       },
       series: [{
         name: 'Worth',
-        data: dailyTotals.map(d => ({ x: d.inventory_date, y: Number(d.total_worth).toFixed(2) }))
+        data: displayInventory.map(d => ({ x: d.inventory_date, y: Number(selectedTotal[d.inventory_date]).toFixed(2), amount: d.amount}))
       }],
+      markers: {
+        size: 2,        // dot size
+        colors: ['#9D7CF2'], // marker fill color
+        strokeColors: '#9D7CF2', // border color
+        strokeWidth: 4, // border padding
+        hover: { size: 8 }
+      },
       xaxis: { 
         type: 'datetime',
         labels: {
@@ -63,8 +88,11 @@
         axisTicks: { color: '#555' }
       },
       tooltip: {
-        custom: ({dataPointIndex}) => {
-          const data = dailyTotals[dataPointIndex];
+        custom: ({seriesIndex}) => {
+          var key = Object.keys(selectedTotal)[seriesIndex];
+          var value = selectedTotal[key];
+          console.log("Tooltip data:", key, value);
+          console.log("Data point index:", seriesIndex);
           return `<div style="
                 background-color: #222;
                 color: #eee;
@@ -73,102 +101,106 @@
                 font-size: 0.9rem;
                 box-shadow: 0 0 8px rgba(0,0,0,0.7);
               ">
-            <strong>Date:</strong> ${new Date(data.inventory_date).toLocaleDateString('de-DE', {
+            <strong>Date:</strong> ${new Date(key).toLocaleDateString('de-DE', {
               year: 'numeric',
               month: '2-digit',
               day: '2-digit'
             })} <br/>
-            <strong>Total worth:</strong> ${Number(data.total_worth).toFixed(2)} €
+            <strong>Total worth:</strong> ${Number(value).toFixed(2)} €
           </div>`;
         }
       }
     };
+    //reset Headers
+    sortTable();
+    if (chart) chart.destroy();
+      chart = new ApexCharts(chartDiv, options);
+      chart.render();
 
-        chart = new ApexCharts(chartDiv, options);
-        chart.render();
-
-        return () => {
-          if (chart) chart.destroy();
-        };
+      return () => {
+        if (chart) chart.destroy();
+      };
   };
 
 function matches(input, query) {
   return input.toLowerCase().includes(query.toLowerCase());
 }
+
 function handleOnSubmit(){
   if (!userInput) return;
   const userInputValue = $userInput.trim().toLowerCase();
   if (userInputValue === '') {
-    inventory = INVENTORY_CONST;
+    justTodaysInventory = DAILY_INVENTORY;
   } else {
-    inventory = INVENTORY_CONST.filter(item =>
+    justTodaysInventory = DAILY_INVENTORY.filter(item =>
       matches(item.item_name, userInputValue)
     );
   }
 };
 
 let sortAsc = true;
-function sortTable(column: string) {
-  if (!inventory || inventory.length === 0) return;
-  inventory = [...inventory].sort((a, b) => {
-    let valA: any, valB: any;
-    const key = column;
-    if (['amount', 'price_low', 'price_med', 'total_worth'].includes(key)) {
-      valA = Number(a[key]);
-      valB = Number(b[key]);
-    } else if (key === 'inventory_date') {
-      const [dA, mA, yA] = String(a[key]).split('.');
-      const [dB, mB, yB] = String(b[key]).split('.');
-      valA = new Date(+yA, +mA - 1, +dA).getTime();
-      valB = new Date(+yB, +mB - 1, +dB).getTime();
-    } else {
-      valA = String(a[key] ?? '').toLowerCase().trim();
-      valB = String(b[key] ?? '').toLowerCase().trim();
-    }
-    //just in case
-    if( key === 'price_med' ) {
-      if(valA == 0) {
-        valA = Number(a['price_low']);
+function sortTable(column: string) {  
+  if (!justTodaysInventory || justTodaysInventory.length === 0) return;
+    justTodaysInventory = [...justTodaysInventory].sort((a, b) => {
+      let valA: any, valB: any;
+      const key = column;
+      if (['amount', 'price_low', 'price_med', 'total_worth'].includes(key)) {
+        valA = Number(a[key]);
+        valB = Number(b[key]);
+      } else if (key === 'inventory_date') {
+        const [dA, mA, yA] = String(a[key]).split('.');
+        const [dB, mB, yB] = String(b[key]).split('.');
+        valA = new Date(+yA, +mA - 1, +dA).getTime();
+        valB = new Date(+yB, +mB - 1, +dB).getTime();
+      } else {
+        valA = String(a[key] ?? '').toLowerCase().trim();
+        valB = String(b[key] ?? '').toLowerCase().trim();
       }
-      if(valB == 0) {
-        valB = Number(b['price_low']);
+      //just in case
+      if( key === 'price_med' ) {
+        if(valA == 0) {
+          valA = Number(a['price_low']);
+        }
+        if(valB == 0) {
+          valB = Number(b['price_low']);
+        }
       }
-    }
-    if (key === 'price_low') {
-      if (valA == 0) {
-        valA = Number(a['price_med']);
+      if (key === 'price_low') {
+        if (valA == 0) {
+          valA = Number(a['price_med']);
+        }
+        if (valB == 0) {
+          valB = Number(b['price_med']);
+        }
       }
-      if (valB == 0) {
-        valB = Number(b['price_med']);
-      }
-    }
-    if (valA < valB) return sortAsc ? -1 : 1;
-    if (valA > valB) return sortAsc ? 1 : -1;
+      if (valA < valB) return sortAsc ? -1 : 1;
+      if (valA > valB) return sortAsc ? 1 : -1;
 
-    // tie-breaker: if sorting by category, use price_low
-    if (key === 'item_category') {
-      const pA = Number(a.price_low);
-      const pB = Number(b.price_low);
-      if (pA < pB) return 1; // always ascending
-      if (pA > pB) return -1;
-    }
+      // tie-breaker: if sorting by category, use price_low
+      if (key === 'item_category') {
+        const pA = Number(a.price_low);
+        const pB = Number(b.price_low);
+        if (pA < pB) return 1; // always ascending
+        if (pA > pB) return -1;
+      }
 
-    return 0;
-  });
+      return 0;
+    });
 
+  if (column !== 'inventory_date') {
   sortAsc = !sortAsc;
-
-  // reset ALL headers to no arrow
-  const headers = document.querySelectorAll("th");
-  headers.forEach(h => {
-    h.innerHTML = h.innerHTML.replace(/▴|▾/g, "");
-  });
-
-  // add arrow only to the active header
-  const header = document.getElementById(column);
-  if (header) {
-    header.innerHTML = header.innerHTML.replace(/▴|▾/g, "") + (sortAsc ? " ▴" : " ▾");
-  }
+    // reset ALL headers to no arrow
+    const headers = document.querySelectorAll("th");
+    headers.forEach(h => {
+      h.innerHTML = h.innerHTML.replace(/▴|▾/g, "");
+    });
+ 
+    // add arrow only to the active header
+    const header = document.getElementById(column);
+    if (header) {
+      header.innerHTML = header.innerHTML.replace(/▴|▾/g, "") + (sortAsc ? " ▴" : " ▾");
+    }
+   }
 }
 
 
@@ -177,10 +209,21 @@ function handleKeyDown(event: KeyboardEvent) {
       handleOnSubmit();
     }
   }
+
+function searchButton(){
+  createGraph();
+}
 </script>
 <main>
   <div bind:this={chartDiv}></div>
-  <input style="width: 100%; padding: 8px; border: 1px solid #555; border-radius: 4px; background: #222; color: white;" type="text" bind:value={$userInput} placeholder="Search Item Name..." onkeyup={handleOnSubmit}/>
+  <form action="#" class="left">
+    <div class="my-input-group">
+      <input  type="text" bind:value={$userInput} placeholder="Search Item Name..." onkeyup={handleOnSubmit}/>
+      <button onclick={searchButton}>
+        Render Graph with selection
+      </button>
+    </div>
+  </form>
   <table id="inventory-table">
     <thead>
       <tr>
@@ -196,7 +239,7 @@ function handleKeyDown(event: KeyboardEvent) {
       </tr>
     </thead>
     <tbody>
-      {#each inventory as entry}
+      {#each justTodaysInventory as entry}
         <tr>
           <td>{new Date(entry.inventory_date).toLocaleDateString('de-DE', {
                 weekday: "short",
@@ -238,6 +281,43 @@ function handleKeyDown(event: KeyboardEvent) {
 </main>
 
 <style>
+
+
+
+.my-input-group {
+  position: relative;
+  width: 100%;
+}
+
+.my-input-group input {
+  width: 100%;
+  padding: 12px 110px 12px 12px; /* extra right padding so text doesn’t overlap button */
+  border: 1px solid #555;
+  border-radius: 5px;
+  background: #222;
+  color: white;
+  font-size: 14px;
+  outline: none;
+}
+
+.my-input-group button {
+  position: absolute;
+  right: 5px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: #444;
+  color: white;
+  border-left: 1px solid #555;
+  border-radius: 5px;
+  padding: 8px 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.my-input-group button:hover {
+  background: #666;
+}
+
   main {
     background: #333;
     color: white;

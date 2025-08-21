@@ -94,7 +94,6 @@
         };
   })();
 });
-
 </script>
 
 <div class="dark-page">
